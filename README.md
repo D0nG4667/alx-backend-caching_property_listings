@@ -49,6 +49,7 @@ This project implements two levels of caching:
 
 1.  **Page-Level Caching**: The `/properties/` endpoint is cached for 15 minutes using the `@cache_page` decorator.
 2.  **Low-Level Caching**: The property queryset is cached for 1 hour using Django's low-level cache API (`cache.get`/`cache.set`) in `properties/utils.py`.
+3.  **Cache Invalidation**: The `all_properties` cache is automatically invalidated whenever a `Property` is created, updated, or deleted using Django signals (`post_save` and `post_delete`).
 
 ## API Endpoints
 
@@ -68,4 +69,9 @@ uv run python manage.py shell -c "from django.core.cache import cache; cache.set
 **2. Test Low-Level Cache (Queryset):**
 ```bash
 uv run python manage.py shell -c "from properties.utils import get_all_properties; from django.core.cache import cache; cache.delete('all_properties'); props = get_all_properties(); print('Key saved in Redis:', cache.get('all_properties') is not None)"
+```
+
+**3. Test Cache Invalidation (Signals):**
+```bash
+uv run python manage.py shell -c "from django.core.cache import cache; from properties.utils import get_all_properties; from properties.models import Property; cache.delete('all_properties'); get_all_properties(); print('Cache before creation:', cache.get('all_properties') is not None); Property.objects.create(title='Test Signal', description='Testing', price=100.00, location='Test'); print('Cache after creation:', cache.get('all_properties') is None)"
 ```
