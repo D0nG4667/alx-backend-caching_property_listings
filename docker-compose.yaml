@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:latest
+    container_name: alx_postgres
+    environment:
+      POSTGRES_DB: property_listing_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432"
+
+  redis:
+    image: redis:latest
+    container_name: alx_redis
+    ports:
+      - "6380:6379"
