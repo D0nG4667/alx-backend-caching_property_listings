@@ -45,7 +45,7 @@ A Django-based property listing application featuring integrated caching with Re
 
 ## Caching Strategy
 
-This project implements two levels of caching:
+This project implements three levels of caching and monitoring:
 
 1.  **Page-Level Caching**: The `/properties/` endpoint is cached for 15 minutes using the `@cache_page` decorator.
 2.  **Low-Level Caching**: The property queryset is cached for 1 hour using Django's low-level cache API (`cache.get`/`cache.set`) in `properties/utils.py`.
@@ -56,6 +56,13 @@ This project implements two levels of caching:
 -   `GET /properties/`: Returns a JSON list of all properties.
     -   **Response Format**: `{"data": [...]}`
     -   **Cache Duration**: 15 minutes (Page), 1 hour (Queryset)
+
+## Performance Monitoring
+
+Developers can monitor cache efficiency using the `get_redis_cache_metrics()` utility in `properties/utils.py`. This function provides:
+-   **Hits**: Total successful cache lookups.
+-   **Misses**: Total failed cache lookups.
+-   **Hit Ratio**: Efficiency percentage updated in real-time.
 
 ## Verification
 
@@ -74,4 +81,9 @@ uv run python manage.py shell -c "from properties.utils import get_all_propertie
 **3. Test Cache Invalidation (Signals):**
 ```bash
 uv run python manage.py shell -c "from django.core.cache import cache; from properties.utils import get_all_properties; from properties.models import Property; cache.delete('all_properties'); get_all_properties(); print('Cache before creation:', cache.get('all_properties') is not None); Property.objects.create(title='Test Signal', description='Testing', price=100.00, location='Test'); print('Cache after creation:', cache.get('all_properties') is None)"
+```
+
+**4. Test Cache Metrics Analysis:**
+```bash
+uv run python manage.py shell -c "from properties.utils import get_redis_cache_metrics; print('Cache Metrics:', get_redis_cache_metrics())"
 ```
