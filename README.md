@@ -43,9 +43,29 @@ A Django-based property listing application featuring integrated caching with Re
 - **Cache:** Redis (mapped to `localhost:6380` on host)
 - **Framework:** Django 6.0+
 
+## Caching Strategy
+
+This project implements two levels of caching:
+
+1.  **Page-Level Caching**: The `/properties/` endpoint is cached for 15 minutes using the `@cache_page` decorator.
+2.  **Low-Level Caching**: The property queryset is cached for 1 hour using Django's low-level cache API (`cache.get`/`cache.set`) in `properties/utils.py`.
+
+## API Endpoints
+
+-   `GET /properties/`: Returns a JSON list of all properties.
+    -   **Response Format**: `{"data": [...]}`
+    -   **Cache Duration**: 15 minutes (Page), 1 hour (Queryset)
+
 ## Verification
 
-To verify the setup, you can run the following command to test Redis connectivity:
+To verify the setup and caching, you can run the following commands:
+
+**1. Test Redis Connectivity:**
 ```bash
 uv run python manage.py shell -c "from django.core.cache import cache; cache.set('test', 'success'); print('Cache connected:', cache.get('test'))"
+```
+
+**2. Test Low-Level Cache (Queryset):**
+```bash
+uv run python manage.py shell -c "from properties.utils import get_all_properties; from django.core.cache import cache; cache.delete('all_properties'); props = get_all_properties(); print('Key saved in Redis:', cache.get('all_properties') is not None)"
 ```
